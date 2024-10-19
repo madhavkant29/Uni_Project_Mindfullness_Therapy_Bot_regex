@@ -1,17 +1,13 @@
 from flask import Flask, jsonify, render_template, request
 import re
 import random
+import os
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
     return render_template('index.html')
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
-
 # Define response patterns and their corresponding responses
 patterns_responses = {
     r".*I am feeling (.*)": [
@@ -1875,17 +1871,12 @@ def get_bot_response(user_input):
     return "Could you please clarify that a bit more?"
 
 
-# Routes
-@app.route("/")
-def home():
-    return render_template("index.html")
-
-
-@app.route("/get")
-def get_bot_response_route():
-    user_text = request.args.get("msg")
-    return get_bot_response(user_text)
-
+@app.route("/chat", methods=["POST"])
+def chat():
+    user_input = request.json.get("message")
+    bot_response = get_bot_response(user_input)
+    return jsonify({"response": bot_response})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
