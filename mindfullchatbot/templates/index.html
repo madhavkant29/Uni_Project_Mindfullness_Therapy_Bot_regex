@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Therapist Chatbot</title>
+    <style>
+        /* Global Settings */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: #2b2828;
+            color: #878787;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            position: relative;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #333, #444);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid #444;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #e0e0e0;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: #bbb;
+        }
+
+        .chatbox {
+            height: 450px;
+            overflow-y: auto;
+            padding: 15px;
+            border: 2px solid #444;
+            border-radius: 10px;
+            background-color: #222;
+            position: relative;
+        }
+
+        .chat-log {
+            list-style: none;
+            padding: 0;
+        }
+
+        .chat-log li {
+            margin-bottom: 15px;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 12px 18px;
+            border-radius: 20px;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        .user {
+            background-color: #007bff;
+            margin-left: auto;
+            text-align: right;
+            border-top-right-radius: 0;
+            color: #fff;
+        }
+
+        .bot {
+            background-color: #555;
+            color: #fff;
+        }
+
+        /* Input Container */
+        .input-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .input-container input {
+            width: 80%;
+            padding: 12px;
+            background-color: #333;
+            color: #fff;
+            border: 2px solid #555;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-container input:focus {
+            border-color: #007bff;
+        }
+
+        .input-container button {
+            width: 15%;
+            padding: 12px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .input-container button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 250px;
+            height: 100%;
+            background-color: #222;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            transform: translateX(100%);
+            color: #e0e0e0;
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            padding: 20px;
+            background-color: #007bff;
+            color: white;
+            margin: 0;
+        }
+
+        .sidebar-section {
+            padding: 15px;
+            border-bottom: 1px solid #444;
+        }
+
+        .sidebar-section h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #bc99d6;
+        }
+
+        .sidebar-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-section ul li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-section ul li a {
+            color: #8b97b5;
+            text-decoration: none;
+        }
+
+        .sidebar-section ul li a:hover {
+            text-decoration: underline;
+        }
+
+        .toggle-sidebar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .header p {
+                font-size: 14px;
+            }
+
+            .chatbox {
+                height: 350px;
+            }
+
+            .input-container input {
+                width: 70%;
+            }
+
+            .input-container button {
+                width: 25%;
+            }
+
+            .sidebar {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Therapist Chatbot</h1>
+            <p>Talk about how you're feeling, and I'll try to help. Alternatively, you can check out our resource tab</p>
+        </div>
+        <div class="chatbox" id="chatbox">
+            <ul class="chat-log" id="chat-log"></ul>
+        </div>
+        <div class="input-container">
+            <input type="text" id="user-input" placeholder="Type your message here..." onkeydown="if (event.keyCode == 13) { sendMessage(); }">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <!-- Sidebar for resources -->
+    <div class="sidebar" id="sidebar">
+        <h2>Mindfulness Resources</h2>
+        <div class="sidebar-section">
+            <h3>Meditation Videos</h3>
+            <ul>
+                <li><a href="https://www.youtube.com/watch?v=inpok4MKVLM" target="_blank">5-Minute Meditation</a></li>
+                <li><a href="https://www.youtube.com/watch?v=ZToicYcHIOU" target="_blank">10-Minute Guided Meditation</a></li>
+                <li><a href="https://www.youtube.com/watch?v=MIr3RsUWrdo" target="_blank">Stress Relief Meditation</a></li>
+                <li><a href="https://youtu.be/H7X-qoGw6W0?si=DitGGe47Lgj7kb2b" target="_blank">Coping with Breakup: 9 Tips</a></li>
+                <li><a href="https://youtu.be/x3A8d2HDt4s?si=OLINcSwKwBRJ2tEk" target="_blank">Understanding Depression: What You Need to Know</a></li>
+                <li><a href="https://youtu.be/8OZdTwfb2Mk?si=COutXNYS_HBypsYA" target="_blank">How to Overcome Sadness After a Breakup</a></li>
+                <li><a href="https://youtu.be/6wl4j4gd2WI?si=sGjn6G1Z_Gv3EMZP" target="_blank">Meditation for Anxiety and Depression</a></li>
+                <li><a href="https://youtu.be/puoddnGTAJk?si=syAqWM2JZh4hxFk4" target="_blank">Dealing with Negative Thoughts and Emotions</a></li>
+                <li><a href="https://youtube.com/playlist?list=PLQfZk4z_wl5DaK3dXZe8jgRzIJy5aNaI0&si=S6pXLhku_HcvdNfc" target="_blank">Tales of Zen</a></li>
+                <li><a href="https://www.youtube.com/watch?v=fEGOo9ZVpns&list=PLQfZk4z_wl5DCkmPXvkl8mL_nn-mCiZ5N&pp=iAQB" target="_blank">Tales of Taoist Wisdom</a></li>
+
+            </ul>
+        </div>
+        <div class="sidebar-section">
+            <h3>Quotes</h3>
+            <ul>
+                <li>"You, yourself, as much as anybody in the entire universe, deserve your love and affection." – Buddha</li>
+                <li>"The best way out is always through." – Robert Frost</li>
+                <li>"Every day may not be good, but there’s something good in every day." – Alice Morse Earle</li>
+                <li>"You miss 100% of the shots you don’t take." – Wayne Gretzky</li>
+                <li>"What lies behind us and what lies before us are tiny matters compared to what lies within us." – Ralph Waldo Emerson</li>
+                <li>"Do not dwell in the past, do not dream of the future, concentrate the mind on the present moment." – Buddha</li>
+                <li>"The only way to do great work is to love what you do." – Steve Jobs</li>
+                <li>"It always seems impossible until it’s done." – Nelson Mandela</li>
+                <li>"Success is not final, failure is not fatal: It is the courage to continue that counts." – Winston Churchill</li>
+                <li>"In the middle of every difficulty lies opportunity." – Albert Einstein</li>
+                <li>"Happiness is not something ready-made. It comes from your own actions." – Dalai Lama</li>
+                <li>"The greatest glory in living lies not in never falling, but in rising every time we fall." – Nelson Mandela</li>
+                <li>"Believe you can and you're halfway there." – Theodore Roosevelt</li>
+
+            </ul>
+        </div>
+        <div class="sidebar-section">
+            <h3>Books</h3>
+            <ul>
+                <li><strong>The Power of Now</strong> by Eckhart Tolle</li>
+                <li><strong>Mindfulness in Plain English</strong> by Bhante Gunaratana</li>
+                <li><strong>Lost Connections</strong> by Johann Hari</li>
+                <li><strong>The Untethered Soul</strong> by Michael A. Singer</li>
+                <li><strong>Radical Acceptance</strong> by Tara Brach</li>
+                <li><strong>The Miracle of Mindfulness</strong> by Thich Nhat Hanh</li>
+                <li><strong>Wherever You Go, There You Are</strong> by Jon Kabat-Zinn</li>
+                <li><strong>How to Change Your Mind</strong> by Michael Pollan</li>
+                <li><strong>The Book of Joy</strong> by Dalai Lama and Desmond Tutu</li>
+                <li><strong>Atomic Habits</strong> by James Clear</li>
+                <li><strong>Man's Search for Meaning</strong> by Viktor E. Frankl</li>
+                <li><strong>The Four Agreements</strong> by Don Miguel Ruiz</li>
+                <li><strong>Daring Greatly</strong> by Brené Brown</li>
+
+            </ul>
+        </div>
+    </div>
+
+    <button class="toggle-sidebar" onclick="toggleSidebar()">Resources</button>
+
+    <script>
+        function appendMessage(sender, message) {
+            const chatLog = document.getElementById('chat-log');
+            const newMessage = document.createElement('li');
+            newMessage.className = sender;
+            newMessage.innerHTML = '<div class="message ' + sender + '">' + message + '</div>';
+            chatLog.appendChild(newMessage);
+            chatLog.scrollTop = chatLog.scrollHeight; // Scroll to the bottom
+        }
+
+        function sendMessage() {
+            const userInput = document.getElementById('user-input');
+            const userText = userInput.value;
+
+            if (userText === "") {
+                return; // Prevent sending empty messages
+            }
+
+            appendMessage('user', userText);
+            userInput.value = ""; // Clear input
+
+            fetch(`/get?msg=${userText}`)
+                .then(response => response.text())
+                .then(data => {
+                    appendMessage('bot', data);
+                });
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
