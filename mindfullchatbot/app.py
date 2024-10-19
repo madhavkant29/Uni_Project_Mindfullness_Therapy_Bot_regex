@@ -4,10 +4,6 @@ import random
 import os
 
 app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return render_template('index.html')
 # Define response patterns and their corresponding responses
 patterns_responses = {
     r".*I am feeling (.*)": [
@@ -1831,6 +1827,10 @@ breakup_books = [
 
 
 # Function to return resources
+@app.route('/')
+def home():
+    return render_template('index.html')
+
 @app.route("/resources")
 def get_resources():
     category = request.args.get("category")
@@ -1847,10 +1847,8 @@ def get_resources():
     else:
         return jsonify({"error": "Invalid category"})
 
-
 # Chatbot Response Function
 last_bot_response = ""
-
 
 def get_bot_response(user_input):
     global last_bot_response
@@ -1869,7 +1867,6 @@ def get_bot_response(user_input):
             return response
 
     return "Could you please clarify that a bit more?"
-
 
 @app.route("/chat", methods=["POST"])
 def chat():
